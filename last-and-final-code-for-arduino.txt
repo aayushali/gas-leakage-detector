@@ -1,0 +1,81 @@
+#include <LiquidCrystal.h>
+#include <SoftwareSerial.h>
+LiquidCrystal lcd(7, 6, 5, 4, 3, 2);
+ 
+SoftwareSerial mySerial(9, 10); //(tx,rx)
+ 
+int gasValue = A0; // smoke / gas sensor connected with analog pin A1 of the arduino / mega.
+int data = 0;
+int relay=8;
+ int buzzer = 11;
+void setup()
+{
+randomSeed(analogRead(0));
+mySerial.begin(9600); // Setting the baud rate of GSM Module
+Serial.begin(9600); // Setting the baud rate of Serial Monitor (Arduino)
+lcd.begin(16,2);
+pinMode(buzzer, OUTPUT);
+pinMode(gasValue, INPUT);
+pinMode(relay, OUTPUT);
+lcd.print (" Gas Leakage ");
+lcd.setCursor(0,1);
+lcd.print (" Detector Alarm ");
+delay(3000);
+lcd.clear();
+}
+ 
+void loop()
+{
+ 
+data = analogRead(gasValue);
+ 
+Serial.print("Gas Level: ");
+Serial.println(data);
+lcd.print ("Gas Scan is ON");
+lcd.setCursor(0,1);
+lcd.print("Gas Level: ");
+lcd.print(data);
+delay(4000);
+ 
+if ( data > 100) //
+{
+
+  tone(buzzer, 3000, 2000);
+  digitalWrite(relay, LOW);
+
+callingUser();
+Serial.print("Gas detect alarm");
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.print("Gas Level Exceed");
+lcd.setCursor(0,1);
+lcd.print(" Calling.. .. ");
+
+delay(1000);
+ 
+}
+else
+{
+Serial.print("Gas Level Low");
+digitalWrite(relay, HIGH);
+
+lcd.clear();
+lcd.setCursor(0,0);
+lcd.print("Gas Level Normal");
+delay(2000);
+noTone(buzzer);
+}
+ 
+lcd.clear();
+}
+ 
+void callingUser()
+{
+Serial.println("Calling Admin");
+mySerial.println("ATD+9779867214807;"); 
+delay(1000);
+mySerial.println("ATDL");
+delay(1000);
+mySerial.println((char)26);// ASCII code of CTRL+Z
+delay(1000);
+}
